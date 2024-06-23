@@ -21,9 +21,9 @@ let users = [];
 let userId = 1;
 
 app.post('/signup', async (req, res) =>{
-    const personName = req.body.name;
-    const personEmail = req.body.email;
-    const personPassword = req.body.password;
+    const personName = req.body.personName;
+    const personEmail = req.body.personEmail;
+    const personPassword = req.body.personPassword;
 
     if(!personName){
         return res
@@ -67,8 +67,8 @@ app.post('/signup', async (req, res) =>{
 // ----------------------- Logar usuário ---------------------
 
 app.post('/login', async (req, res) => {
-    const loginEmail = req.body.email;
-    const loginPassword = req.body.password;
+    const loginEmail = req.body;
+    const loginPassword = req.body;
 
     if (!loginEmail){
         return res
@@ -82,7 +82,7 @@ app.post('/login', async (req, res) => {
             .send(JSON.stringify({Mensagem: "Insira uma senha válida"}));
     }
 
-    const findUser = users.find(user => user.personEmail === loginEmail);
+    const findUser = users.find((user) => user.personEmail === loginEmail);
 
     if (!findUser){
         return res
