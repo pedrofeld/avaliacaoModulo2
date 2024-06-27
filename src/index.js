@@ -67,22 +67,21 @@ app.post('/signup', async (req, res) =>{
 // ----------------------- Logar usuário ---------------------
 
 app.post('/login', async (req, res) => {
-    const loginEmail = req.body;
-    const loginPassword = req.body;
+    const {personEmail, personPassword} = req.body;
 
-    if (!loginEmail){
+    if (!personEmail){
         return res
             .status(400)
             .send(JSON.stringify({Mensagem: "Insira um e-mail válido"}));
     }
 
-    if (!loginPassword){
+    if (!personPassword){
         return res
             .status(400)
             .send(JSON.stringify({Mensagem: "Insira uma senha válida"}));
     }
-
-    const findUser = users.find((user) => user.personEmail === loginEmail);
+    
+    const findUser = users.find(user => user.personEmail === personEmail)
 
     if (!findUser){
         return res
@@ -90,7 +89,7 @@ app.post('/login', async (req, res) => {
             .send(JSON.stringify({Mensagem: "Email não encontrado no sistema, verifique ou crie uma conta"}));
     }
     
-    const matchPassword = await bcrypt.compare(loginPassword, findUser.personPassword);
+    const matchPassword = await bcrypt.compare(personPassword, findUser.personPassword);
 
     if (!matchPassword){
         return res
