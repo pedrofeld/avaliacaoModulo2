@@ -17,8 +17,8 @@ app.get('/', (req, res) => {
 });
 
 // --------------------Criar pessoa usuária ------------------
-let users = [];
-let userId = 1;
+    let users = [];
+    let userId = 1;
 
 app.post('/signup', async (req, res) =>{
     const personName = req.body.personName;
@@ -101,33 +101,31 @@ app.post('/login', async (req, res) => {
 })
 
 // ----------------------- Criar recado ---------------------
-let messages = [];
-let messageId = 1;
+    let messages = [];
+    let messageId = 1;
 
 app.post('/massage',(req,res)=>{
-    const email = req.body.email;
-    const title = req.body.title;
-    const description = req.body.description;
+    const {personEmail, title, description} = req.body;
 
-    if (!email) {
+    if (!personEmail) {
         return res.status(400).send(JSON.stringify({
             Mensagem: 'Informe um e-mail'
         }));
     }
 
     if (!title) {
-        res.status(400).send(JSON.stringify({
+        return res.status(400).send(JSON.stringify({
             Mensagem: 'Informe um título'
         }))
     }
 
     if (!description) {
-      res.status(400).send(JSON.stringify({
+    return res.status(400).send(JSON.stringify({
           Mensagem: 'Informe uma descrição'
       }))
     }
 
-    const findUser = users.find(user => user.personEmail === email);
+    const findUser = users.find(user => user.personEmail === personEmail);
 
     if (!findUser) {
         return res.status(404).send(JSON.stringify({
@@ -139,30 +137,39 @@ app.post('/massage',(req,res)=>{
         id: messageId,
         messageTitle: title,
         messageDescription: description,
-        userEmail: email,
+        userEmail: personEmail,
     }
 
     messages.push(newMassage)
+    console.log(messages)
 
     messageId ++
 
-    response.status(201).send(JSON.stringify({Mensagem: `Mensagem criado com sucesso! <br> ${newMassage.messageDescription}`}))
+    res.status(201).send(JSON.stringify({Mensagem: `Mensagem criado com sucesso! ${newMassage.messageDescription}`}))
 })
 
 // ------------------------- Ler recado -----------------------
 
 app.get('/massage/:email', (req, res) => {
-    const email = req.params.email; /* pegar parametro da URL*/
+    // Extrair o e-mail dos parâmetros da URL
+    const { email } = req.params;
 
+    // Procurar o usuário pelo e-mail
     const findUser = users.find(user => user.personEmail === email);
 
     if (!findUser) {
-        return res.status(404).send(JSON.stringify({
+        return res.status(404).json({
             Mensagem: 'Email não encontrado, verifique ou crie uma conta'
-        }));
+        });
     }
-
     const userMessages = messages.filter(message => message.userEmail === email);
+
+    if (!userMessages){
+        return res.status(404).json({
+            Mensagem: 'Erro no filter'
+        });
+    }
+    console.log(userMessages)
 
     if (userMessages.length === 0) {
       return res.status(400).send(JSON.stringify({
@@ -170,15 +177,15 @@ app.get('/massage/:email', (req, res) => {
       }))
     }
   
-    const mappedData = messages.map((messages) => `Título: ${messages.messageTitle} - Descrição: ${messages.messageDescription}`)
-  
-    res.status(200).send({ Mensagem: `Seja bem-vinde! Mensagens do usuário: <br>${mappedData.join('<br>')}` });
+    const mappedData = userMessages.map((message) => `Título: ${message.messageTitle} - Descrição: ${message.messageDescription}`);
+
+    res.status(200).json({ Mensagem: `Seja bem-vinde! ${mappedData.join(', ')}` });
 })
 
 // ---------------------- Alterar recado ---------------------
 
 app.put('/massage/:id', (req, res) => {
-    const searchId = Number(request.params.id);
+    const searchId = Number(req.params.id);
 
     if (!searchId) {
         return res.status(400).send({ Mensagem: 'Por favor, informe um id válido da mensagem'});
@@ -190,8 +197,7 @@ app.put('/massage/:id', (req, res) => {
         return res.status(404).json({ Mensagem: "Por favor, informe um id válido da mensagem" });
     }
 
-    const newTitle = req.body.newTitle;
-    const newDescription = req.body.newDescription;
+    const { newTitle, newDescription } = req.body;
 
     if (!newTitle) {
         return res.status(400).send({ Mensagem: 'Informe um novo título válido' });
@@ -209,13 +215,13 @@ app.put('/massage/:id', (req, res) => {
         updatedMessage.messageDescription = newDescription;
     }
 
-    response.status(200).send({ Mensagem: 'Mensagem atualizada com sucesso !', messages: updatedMessage });
+    res.status(200).send({ Mensagem: 'Mensagem atualizada com sucesso !', messages: updatedMessage });
 });
 
 //-------------------- Remover recado -------------------------
 
 app.delete('/massage/:id',(req, res)=>{
-    const searchId = Number(request.params.id);
+    const searchId = Number(req.params.id);
 
     if (!searchId) {
         return res.status(400).send({ Mensagem: 'Mensagem não encontrada, verifique o identificador em nosso banco'});
